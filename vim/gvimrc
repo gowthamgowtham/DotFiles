@@ -18,7 +18,7 @@ set cindent
 set ignorecase
 
 if( has("gui_running") )
-    colors default
+    colors torte
     set foldenable
     set fdc=3
     set cursorline
@@ -60,7 +60,7 @@ set directory=~/.vim/backup
 set backupdir=~/.vim/backup
 
 " For folding
-highlight FoldColumn ctermfg=black ctermbg=white guifg=black guibg=white
+highlight FoldColumn ctermfg=black ctermbg=white guifg=black guibg=#111111
 
 function! GetPerlFold()
    if getline(v:lnum) =~ '^\s*sub\s'
@@ -208,7 +208,13 @@ set showmode
 exec "set toolbariconsize=tiny"
 
 " I want _j to work as shortcut to justify my text
-source $VIMRUNTIME/macros/justify.vim
+let justify_vim_path=$VIMRUNTIME . "/macros/justify.vim"
+if( filereadable(justify_vim_path) )
+    runtime justify_vim_path
+else
+    echoerr "Cannot source " . justify_vim_path . "! File not found!"
+endif
+
 
 " Autocommands
 au! BufRead,BufNewFile *Spec*                           set filetype=eSpec      " iSpec,xSpec,pSpec,tSpec,kSpec
@@ -221,21 +227,7 @@ au! BufRead,BufNewFile *.v                              set ft=verilog          
 " Make syntax highlighting work best. Unlimited scanning of lines
 set synmaxcol=0
 
-function! ChangeFontSize( delta )
-    let l:plusOrMinus = a:delta
-    let l:font=&guifont
-    let l:newfont=&guifont
-    
-    if( plusOrMinus == 1 )
-        let l:newfont = system( "/user/a0393528/scripts/incrementLastNumber.pl  \"" . font . "\"" )
-    else
-        let l:newfont = system( "/user/a0393528/scripts/decrementLastNumber.pl  \"" . font . "\"" )
-    endif
-    " sleep 1
-    exe "set guifont=" . l:newfont
-    redraw
-    echomsg "New font: ". l:newfont
-endfunction
-map <F7> :call ChangeFontSize( -1 )<CR>
-map <F8> :call ChangeFontSize( 1 )<CR>
-
+" Decorate cursor line and column
+hi CursorLine guibg=#181818
+hi CursorColumn guibg=#181818
+hi LineNr guifg=cyan
