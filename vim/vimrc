@@ -1,0 +1,233 @@
+set autoindent
+set number
+set hlsearch
+set incsearch
+filetype on
+syn on
+set guifont=Courier\ New\ 12
+set ts=4
+set sw=4
+set visualbell
+
+set nocp
+set cinoptions=:0,p0,t0
+set cinwords=if,else,while,do,for,switch,case
+set backspace=indent,eol,start
+set formatoptions=tcqr
+set cindent
+set ignorecase
+
+if( has("gui_running") )
+    colors torte
+    set foldenable
+    set fdc=3
+    set cursorline
+    set cursorcolumn
+endif
+
+set mousem=popup
+set ls=2
+set backup
+set ruler
+set showcmd
+set magic
+
+" Do NOT wrap around when searching
+set nowrapscan
+
+" Put spaces for tabs
+set expandtab
+set smarttab
+
+" Navigate tabs easily
+" CTRL + t   :   Open new tab
+" CTRL + <-  :   Move to previous tab
+" CTRL + ->  :   Move to next tab
+map <Leader>t     :tabnew<CR>
+map <F5>      :TlistToggle<CR>
+map <F2>       :w!<CR>
+imap <F2>       <ESC>:w!<CR>i<Right>
+imap <C-s>      <ESC>:w!<CR>i<Right>
+imap <C-S>      <ESC>:w!<CR>i<Right>
+
+map ;           :call ShowFullPath()<CR>
+
+map <F12> :set invwrap<CR>
+imap <F12> <ESC>:set invwrap<CR>i<Right>
+
+" Store the backup temporary files here
+set directory=~/.vim/backup
+set backupdir=~/.vim/backup
+
+" For folding
+highlight FoldColumn ctermfg=black ctermbg=white guifg=black guibg=#111111
+
+function! GetPerlFold()
+   if getline(v:lnum) =~ '^\s*sub\s'
+      return ">1"
+   elseif getline(v:lnum) =~ '\}\s*$'
+      let my_perlnum = v:lnum
+      let my_perlmax = line("$")
+      while (1)
+         let my_perlnum = my_perlnum + 1
+         if my_perlnum > my_perlmax
+            return "<1"
+         endif
+         let my_perldata = getline(my_perlnum)
+         if my_perldata =~ '^\s*\(\#.*\)\?$'
+            " do nothing
+         elseif my_perldata =~ '^\s*sub\s'
+            return "<1"
+         else
+            return "="
+         endif
+      endwhile
+   else
+      return "="
+   endif
+endfunction
+
+" Set the current dir as the working dir
+function! CHANGE_CURR_DIR()
+    let _dir = expand("%:p:h")
+    let g:owd = _dir
+    if( isdirectory(_dir) )
+        exec "cd " . _dir
+    endif
+    unlet _dir
+endfunction
+
+function! DotLibSettings()
+    set syntax=c
+    set fdc=8
+    set foldenable
+    set foldmethod=syntax
+    set foldexpr=
+endfunction
+
+function! SetFTEqPerl()
+    if IsPerlFile()    
+        set ft=perl
+        setlocal foldexpr=GetPerlFold()
+    endif
+endfunction
+
+function! IsPerlFile( )
+    return CheckPerlHoundInFirstLine() 
+endfunction
+
+function! CheckPerlHoundInFirstLine()
+    let line=getline( 1 )
+    if line =~ '.*myperlexec.*'
+        return 1
+    elseif line =~ '.*perlHound.*'
+        return 1
+    elseif line =~ '.*package.*'
+        return 1
+    elseif line =~ '.*myPerl.*'
+        return 1
+    else
+        return 0
+    endif
+endfunction
+
+autocmd BufEnter * call CHANGE_CURR_DIR()
+
+" Function to insert the current date string
+function! InsertDate()
+    let s:mydate = system('date')
+    exe "normal I" . s:mydate . "\<Esc>"
+endfunction
+map <F3>        :call InsertDate()<CR>
+
+" Function to display full path of the current file
+function! ShowFullPath()
+    let _path = expand("%:p")
+    echo _path
+    unlet _path
+endfunction
+
+" Command line completion lists matches!
+set wildmenu
+
+" Required shell for launching external programs
+" set shell=$SHELL
+set shell=/bin/tcsh
+
+" smart case = uppercase search case sensitive
+set smartcase
+
+" word completion <C-X><C-K>, English dictionary
+" set dict=~/IMPORTANT/words
+
+" Load the tags for CDA funcs.
+" set dict+=~/IMPORTANT/cdaTags
+" Not required, I no longer write code involving CDA
+
+" completion option: 
+" . = scan current buffer
+" w = scan buffer from other windows
+" b	scan other loaded buffers that are in the buffer list
+" u	scan the unloaded buffers that are in the buffer list
+" U	scan the buffers that are not in the buffer list
+" k	scan the files given with the 'dictionary' option
+" i scan current and included files
+" set complete=.,w,b,U,s,k,i
+set complete=.,w,b,U,s,i " Don't scan dictionary, not required in perl coding
+
+" ignore case while completing keyword
+"set infercase
+
+" foucus follows mouse cursor
+"set mousefocus
+
+" match pairs
+set mps=(:),{:},[:],<:>
+
+" show matching pairs
+set showmatch
+
+" time interval for showing matches
+set matchtime=8
+
+" to show whitespace, End of line as $ and TAB as ^I, disabled here
+" set nolist
+
+" Ask vim to show the current mode
+set showmode
+
+" set font
+"set guifont=Courier
+"set guifont=Courier\ New\ 11
+"set guifont=MiscFixed\ 13
+"set guifont=Liberation\ Mono\ 11
+"set guifont=MiscFixed\ Semi-Condensed\ 14
+"set guifont=MiscFixed\ 12
+"set guifont=LucidaTypewriter\ 11
+" My toolbar icon should be tiny
+exec "set toolbariconsize=tiny"
+
+" I want _j to work as shortcut to justify my text
+let justify_vim_path=$VIMRUNTIME . "/macros/justify.vim"
+if( filereadable(justify_vim_path) )
+    runtime justify_vim_path
+else
+    echoerr "Cannot source " . justify_vim_path . "! File not found!"
+endif
+
+
+" Autocommands
+au! BufRead,BufNewFile *Spec*                           set filetype=eSpec      " iSpec,xSpec,pSpec,tSpec,kSpec
+au! BufRead,BufNewFile *.ibs                            set filetype=ibs        " IBIS file
+au! BufRead,BufNewFile *                                call SetFTEqPerl()      " Set only if perlHound/myperlexec/myPerl
+au! BufRead,BufNewFile *.sp,*.spi,*.tispice,*.hspice    set filetype=spice      " Spice syntax
+au! BufRead,BufNewFile *.lib,*.tilib,*ldb               call DotLibSettings()   " .(ti)?lib, C syntax
+au! BufRead,BufNewFile *.v                              set ft=verilog          " Verilog model
+
+" Make syntax highlighting work best. Unlimited scanning of lines
+set synmaxcol=0
+
+" Decorate cursor line and column
+hi CursorLine guibg=#181818
+hi CursorColumn guibg=#181818
+hi LineNr guifg=cyan
