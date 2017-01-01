@@ -4,7 +4,6 @@ set hlsearch
 set incsearch
 filetype on
 syn on
-set guifont=Courier\ New\ 12
 set ts=4
 set sw=4
 set visualbell
@@ -16,14 +15,6 @@ set backspace=indent,eol,start
 set formatoptions=tcqr
 set cindent
 set ignorecase
-
-if( has("gui_running") )
-    colors torte
-    set foldenable
-    set fdc=3
-    set cursorline
-    set cursorcolumn
-endif
 
 set mousem=popup
 set ls=2
@@ -61,77 +52,6 @@ set backupdir=~/.vim/backup
 
 " For folding
 highlight FoldColumn ctermfg=black ctermbg=white guifg=black guibg=#111111
-
-function! GetPerlFold()
-   if getline(v:lnum) =~ '^\s*sub\s'
-      return ">1"
-   elseif getline(v:lnum) =~ '\}\s*$'
-      let my_perlnum = v:lnum
-      let my_perlmax = line("$")
-      while (1)
-         let my_perlnum = my_perlnum + 1
-         if my_perlnum > my_perlmax
-            return "<1"
-         endif
-         let my_perldata = getline(my_perlnum)
-         if my_perldata =~ '^\s*\(\#.*\)\?$'
-            " do nothing
-         elseif my_perldata =~ '^\s*sub\s'
-            return "<1"
-         else
-            return "="
-         endif
-      endwhile
-   else
-      return "="
-   endif
-endfunction
-
-" Set the current dir as the working dir
-function! CHANGE_CURR_DIR()
-    let _dir = expand("%:p:h")
-    let g:owd = _dir
-    if( isdirectory(_dir) )
-        exec "cd " . _dir
-    endif
-    unlet _dir
-endfunction
-
-function! DotLibSettings()
-    set syntax=c
-    set fdc=8
-    set foldenable
-    set foldmethod=syntax
-    set foldexpr=
-endfunction
-
-function! SetFTEqPerl()
-    if IsPerlFile()    
-        set ft=perl
-        setlocal foldexpr=GetPerlFold()
-    endif
-endfunction
-
-function! IsPerlFile( )
-    return CheckPerlHoundInFirstLine() 
-endfunction
-
-function! CheckPerlHoundInFirstLine()
-    let line=getline( 1 )
-    if line =~ '.*myperlexec.*'
-        return 1
-    elseif line =~ '.*perlHound.*'
-        return 1
-    elseif line =~ '.*package.*'
-        return 1
-    elseif line =~ '.*myPerl.*'
-        return 1
-    else
-        return 0
-    endif
-endfunction
-
-autocmd BufEnter * call CHANGE_CURR_DIR()
 
 " Function to insert the current date string
 function! InsertDate()
@@ -205,7 +125,6 @@ set showmode
 "set guifont=MiscFixed\ 12
 "set guifont=LucidaTypewriter\ 11
 " My toolbar icon should be tiny
-exec "set toolbariconsize=tiny"
 
 " I want _j to work as shortcut to justify my text
 let justify_vim_path=$VIMRUNTIME . "/macros/justify.vim"
@@ -215,14 +134,6 @@ else
     echoerr "Cannot source " . justify_vim_path . "! File not found!"
 endif
 
-
-" Autocommands
-au! BufRead,BufNewFile *Spec*                           set filetype=eSpec      " iSpec,xSpec,pSpec,tSpec,kSpec
-au! BufRead,BufNewFile *.ibs                            set filetype=ibs        " IBIS file
-au! BufRead,BufNewFile *                                call SetFTEqPerl()      " Set only if perlHound/myperlexec/myPerl
-au! BufRead,BufNewFile *.sp,*.spi,*.tispice,*.hspice    set filetype=spice      " Spice syntax
-au! BufRead,BufNewFile *.lib,*.tilib,*ldb               call DotLibSettings()   " .(ti)?lib, C syntax
-au! BufRead,BufNewFile *.v                              set ft=verilog          " Verilog model
 
 " Make syntax highlighting work best. Unlimited scanning of lines
 set synmaxcol=0

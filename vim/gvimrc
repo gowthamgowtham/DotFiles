@@ -1,0 +1,8 @@
+
+set guifont=Courier\ New\ 12
+colors torte
+set foldenable
+set fdc=3
+set cursorline
+set cursorcolumn
+exec "set toolbariconsize=tiny"
