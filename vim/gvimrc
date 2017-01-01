@@ -1,8 +1,8 @@
 
-set guifont=Courier\ New\ 12
+set guifont=Monaco\ 12
 colors torte
 set foldenable
 set fdc=3
 set cursorline
-set cursorcolumn
+set nocursorcolumn
 exec "set toolbariconsize=tiny"
